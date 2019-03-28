@@ -275,8 +275,17 @@ When you click on vote link
 
 ![Vote Info](images/ui4.png)
 
+### 5. Runnig the endpoints
+To access the basic and fault tolerant metrics, you need to make sure that you hit each of the endpoints. You should run the application by going to the URL:
+`http://<cluster hostname/domain name >`
+you can get the cluster domain name by running
+`kubectl get ing`
 
-### 5. Installing Prometheus Server
+Then you should click each of the links in your application so that its hitting the endpoints in each of the microservices. For some of the endpoints if you cannot access through the application you can hit it using `curl` command. for example:
+
+`curl http://sanjeev-cluster-mp-metrics.us-south.containers.appdomain.cloud/speaker/getAllSpeakers` will hit the endpoint where `@Bulkhead` annotation is used.
+
+### 6. Installing Prometheus Server
 
 > NOTE: In order for prometheus to scrapge fault tolerant metrics, you should hit each of the endpoints annonated with fault tolerant annotations.  The metrics query starts with `ft_`.
 
@@ -295,7 +304,7 @@ Sample fault tolerant metrics graph for `@Bulkhead` on prometheus server:
 
 > NOTE: Exposing metrics using prometheus server is not recommended as the metrics are not human readable.
 
-### 6. Installing Grafana
+### 7. Installing Grafana
 
 Grafana is a platform for analytics and monitoring. You can create different charts based on the metrics gathered by Prometheus server. The deployment yaml file [Prometheus server](manifests/deploy-grafana.yml) installs the Grafana dashboard into the cluster which you can access on port 3000 after port forwarding. To run locally you can use the following command:
 
