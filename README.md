@@ -276,12 +276,12 @@ When you click on vote link
 ![Vote Info](images/ui4.png)
 
 ### 5. Runnig the endpoints
-To access the basic and fault tolerant metrics, you need to make sure that you hit each endpoints. You should run the application by going to the URL:
+To access the basic and fault tolerant metrics, you need to make sure that you hit each of the endpoints. You should run the application by going to the URL:
 `http://<cluster hostname/domain name >`
 you can get the cluster domain name by running
 `kubectl get ing`
 
-Then you should click each links in your application so that its hitting the endpoints in each of the microservices. For some of the endpoints if you cannot access through the application you can hit it using `curl` command. for example:
+Then you should click each of the links in your application so that its hitting the endpoints in each of the microservices. For some of the endpoints if you cannot access through the application you can hit it using `curl` command. for example:
 
 `curl http://sanjeev-cluster-mp-metrics.us-south.containers.appdomain.cloud/speaker/getAllSpeakers` will hit the endpoint where `@Bulkhead` annotation is used.
 
