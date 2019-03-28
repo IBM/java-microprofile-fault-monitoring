@@ -32,27 +32,18 @@ The fork [sample application](https://github.com/IBM/sample.microservices.web-ap
 
 ## Microprofile Fault Tolerant Feature
 
-Every Microservices fail and it's is really important to create microservices which are resilient. [Eclipse MicroProfile Fault Tolerance](https://github.com/eclipse/microprofile-fault-tolerance) provides simple, configurable and flexible solution to create a Fault Tolerance microservice. It offers the following Fault Tolerance policies:
+All Microservices fail and it's is really important to create microservices which are resilient. [Eclipse MicroProfile Fault Tolerance](https://github.com/eclipse/microprofile-fault-tolerance) provides a simple, configurable and flexible solution to create a Fault Tolerant microservice. It offers the following Fault Tolerance policies:
 
-```bash
-    * Timeout: Define a duration for timeout.
-    * Retry: Define a criteria on when to retry.
-    * Fallback: provide an alternative solution for a failed execution.
-    * Bulkhead: isolate failures in part of the system while the rest part of the system can still function.
-    * CircuitBreaker: offer a way of fail fast by automatically failing execution to prevent the system overloading and indefinite wait or timeout by the clients.
-    * Asynchronous: invoke the operation asynchronously.
-```
+* **Timeout**: Define a duration for timeout.
+* **Retry**: Define a criteria on when to retry.
+* **Fallback**: provide an alternative solution for a failed execution.
+* **Bulkhead**: isolate failures in part of the system while the rest part of the system can still function.
+* **CircuitBreaker**: offer a way of fail fast by automatically failing execution to prevent the system overloading and indefinite wait or timeout by the clients.
+* **Asynchronous**: invoke the operation asynchronously.
 
 The main design is to separate execution logic from execution. The execution can be configured with fault tolerance policies. Eclipse MicroProfile Fault Tolerance introduces the following annotations for the corresponding Fault Tolerance policies:
 
-```
-    Timeout
-    Retry
-    Fallback
-    Bulkhead
-    CircuitBreaker
-    Asynchronous
-```
+**@Timeout, @Retry, @Fallback, @Bulkhead, @CircuitBreaker, @Asynchronous**
 
 All you need to do is to add these annotations to the methods or bean classes you would like to achieve fault tolerance.
 

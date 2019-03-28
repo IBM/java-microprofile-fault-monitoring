@@ -14,7 +14,7 @@ spec:
       containers:
       - name: microservice-vote
         #change the image name
-        image: journeycode/microservice-metrics-vote
+        image: journeycode/microservice-fault-tolerant-vote
         ports:
           - containerPort: 9080
         imagePullPolicy: Always
