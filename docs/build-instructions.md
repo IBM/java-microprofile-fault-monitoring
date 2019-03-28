@@ -8,7 +8,7 @@
 > ```
 
 
-* `git clone` and `mvn clean package` the following projects:
+* `git clone` and `git checkout mp.fault.tolerant` branch in each of the following projects:
    * [Web-App](https://github.com/IBM/sample.microservices.web-app)
    ```bash
       git clone https://github.com/IBM/sample.microservices.web-app.git
@@ -23,14 +23,14 @@
   ```
    * [Session](https://github.com/IBM/sample.microservices.session)
    ```bash
-      git clone https://github.com/IBM/sample.microservices.session.git
+      git clone https://github.com/IBM/sample.microservices.session.git.
   ```
    * [Vote](https://github.com/IBM/sample.microservices.vote)
    ```bash
       git clone https://github.com/IBM/sample.microservices.vote.git
   ```
 
-* `mvn clean package` in each ../sample.microservices.* projects
+* `mvn clean package -DskipTests` in each ../sample.microservices.* projects
 
 
 # 2. Build application containers
@@ -47,44 +47,38 @@ Use the following commands to build and push your microservice containers.
 Build the web-app microservice container
 
 ```bash
-docker build -t <docker_namespace>/microservice-ol-webapp sample.microservices.web-app
-docker push <docker_namespace>/microservice-ol-webapp
+docker build -t <docker_namespace>/microservice-fault-tolerant-webapp sample.microservices.web-app
+docker push <docker_namespace>/microservice-fault-tolerant-webapp
 ```
 
 Build the vote microservice container
 
 ```bash
-docker build -t <docker_namespace>/microservice-ol-vote sample.microservices.vote
-docker push <docker_namespace>/microservice-ol-vote
+docker build -t <docker_namespace>/microservice-fault-tolerant-vote sample.microservices.vote
+docker push <docker_namespace>/microservice-fault-tolerant-vote
 ```
 
 Build the schedule microservice container
 
 ```bash
-docker build -t <docker_namespace>/microservice-ol-schedule sample.microservices.schedule
-docker push <docker_namespace>/microservice-ol-schedule
+docker build -t <docker_namespace>/microservice-fault-tolerant-schedule sample.microservices.schedule
+docker push <docker_namespace>/microservice-fault-tolerant-schedule
 ```
 
 Build the speaker microservice container
 
 ```bash
-docker build -t <docker_namespace>/microservice-ol-speaker sample.microservices.speaker
-docker push <docker_namespace>/microservice-ol-speaker
+docker build -t <docker_namespace>/microservice-fault-tolerant-speaker sample.microservices.speaker
+docker push <docker_namespace>/microservice-fault-tolerant-speaker
 ```
 
 Build the session microservice container
 
 ```bash
-docker build -t <docker_namespace>/microservice-ol-session sample.microservices.session
-docker push <docker_namespace>/microservice-ol-session
+docker build -t <docker_namespace>/microservice-fault-tolerant-session sample.microservices.session
+docker push <docker_namespace>/microservice-fault-tolerant-session
 ```
 
-Build the nginx controller
-
-```bash
-docker build -t <docker_namespace>/nginx-server nginx
-docker push <docker_namespace>/nginx-server
-```
 
 # 3. Update the Kubernetes manifests:
 

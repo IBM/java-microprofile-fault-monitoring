@@ -1,14 +1,14 @@
-[![Build Status](https://travis-ci.org/IBM/Java-MicroProfile-on-Kubernetes.svg?branch=master)](https://travis-ci.org/IBM/Java-MicroProfile-on-Kubernetes)
+[![Build Status](https://travis-ci.org/IBM/Java-MicroProfile-on-Kubernetes.svg?branch=master)](https://travis-ci.org/IBM/java-microprofile-fault-monitoring)
 
-# Track usage metrics via the MicroProfile Metrics feature
+# Build fault tolerant microservices via the MicroProfile fault-tolerant feature
 
 
-This code demonstrates the deployment of a Java Open Liberty application using MicroProfile on Kubernetes. It uses [Prometheus](https://prometheus.io/) to scrape application metrics and [Grafana](https://grafana.com/) platform for analytics and monitoring.
+This code demonstrates the deployment of a Java Open Liberty application using MicroProfile on Kubernetes. It uses [Prometheus](https://prometheus.io/) to scrape application metrics and [Grafana](https://grafana.com/) platform for analytics and monitoring. The application uses `MicroProfile Release 2.1` and focuses on `Fault Tolerant`, which is one of the features in that release.
 
 [MicroProfile](https://microprofile.io/) is a baseline platform definition that optimizes Enterprise Java for a microservices architecture and delivers application portability across multiple MicroProfile runtimes. Since the release of MicroProfile 1.2, the metrics feature comes out-of-the-box with the platform.
 
 The [sample application](https://github.com/IBM/sample.microservices.web-app) used is a web application for managing a conference and is based on a number of discrete microservices. The front end is written in Angular; the backing microservices are in Java. All run on Open Liberty, in Docker containers managed by Kubernetes.  It's based on a [demo application](https://github.com/eclipse/microprofile-conference) from the MicroProfile platform team.
-The fork [sample application](https://github.com/IBM/sample.microservices.web-app) was converted to use Open Liberty and Microprofile Metrics which is part of Microprofile Release 1.2.
+The fork [sample application](https://github.com/IBM/sample.microservices.web-app) was converted to use Open Liberty and Microprofile Metrics which is part of Microprofile Release 2.1.
 
 ![architecture](images/architecture.png)
 
@@ -30,9 +30,22 @@ The fork [sample application](https://github.com/IBM/sample.microservices.web-ap
 - [Open Liberty - An IBM open source project](https://openliberty.io/)
 
 
-## Microprofile Metrics
+## Microprofile Fault Tolerant Feature
 
-MicroProfile Metrics provides a way to register Application-specific metrics to allow applications to expose metrics in the application scope. For more details on the metrics application programming model click [here](https://github.com/eclipse/microprofile-metrics/blob/master/spec/src/main/asciidoc/app-programming-model.adoc)
+All Microservices fail and it's is really important to create microservices which are resilient. [Eclipse MicroProfile Fault Tolerance](https://github.com/eclipse/microprofile-fault-tolerance) provides a simple, configurable and flexible solution to create a Fault Tolerant microservice. It offers the following Fault Tolerance policies:
+
+* **Timeout**: Define a duration for timeout.
+* **Retry**: Define a criteria on when to retry.
+* **Fallback**: provide an alternative solution for a failed execution.
+* **Bulkhead**: isolate failures in part of the system while the rest part of the system can still function.
+* **CircuitBreaker**: offer a way of fail fast by automatically failing execution to prevent the system overloading and indefinite wait or timeout by the clients.
+* **Asynchronous**: invoke the operation asynchronously.
+
+The main design is to separate execution logic from execution. The execution can be configured with fault tolerance policies. Eclipse MicroProfile Fault Tolerance introduces the following annotations for the corresponding Fault Tolerance policies:
+
+**@Timeout, @Retry, @Fallback, @Bulkhead, @CircuitBreaker, @Asynchronous**
+
+All you need to do is to add these annotations to the methods or bean classes you would like to achieve fault tolerance.
 
 ## Getting Started
 
@@ -49,6 +62,7 @@ _Note: These instructions are tested on Kubernetes 1.10.5.  Your mileage may var
 After installing (or setting up your access to) Kubernetes ensure that you can access it by running the following and confirming you get version responses for both the Client and the Server:
 
 ```bash
+
 $ kubectl version
 
 Client Version: version.Info{Major:"1", Minor:"11", GitVersion:"v1.11.0", GitCommit:"91e7b4fd31fcd3d5f436da26c980becec37ceefe", GitTreeState:"clean", BuildDate:"2018-06-27T20:17:28Z", GoVersion:"go1.10.2", Compiler:"gc", Platform:"linux/amd64"}
@@ -60,9 +74,11 @@ Server Version: version.Info{Major:"1", Minor:"10", GitVersion:"v1.10.5+IKS", Gi
 ### 1. Clone Repository
 
 First, clone our repository.
+
 ```bash
-git clone https://github.com/IBM/java-microprofile-metrics-on-kubernetes
-cd java-microprofile-metrics-on-kubernetes
+git clone https://github.com/IBM/java-microprofile-fault-monitoring.git
+cd java-microprofile-fault-monitoring
+
 ```
 
 ### 2. Optional Step - Build Application
