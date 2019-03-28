@@ -68,7 +68,7 @@ The `@Retry` annotation allows you to define a criteria on when to retry. The be
 ```
 
 ### @Timeout
-The `@Timeout` annotation allows you to define a duration for timeout.It prevents from an execution to wait for ever. In the below example the timeout is 100ms after which the method will fail with a `TimeoutException`.
+The `@Timeout` annotation allows you to define a duration for timeout. It prevents from an execution to wait for ever. In the below example the timeout is 100ms after which the method will fail with a `TimeoutException`.
 
 ```
 /**
@@ -93,7 +93,7 @@ The `@Timeout` annotation allows you to define a duration for timeout.It prevent
 ```
 
 ### @CircuitBreaker
-The `@CircuitBreaker` annotation allows you to prevent repeating timeout so that the failing services fail fast. The below code snippet means that the circuit is open once 2 (4 * 0.5) failures occur among the rolling window of 4 consecutive invocations. The circuit will stay open for 1000ms. After 5 consecutive successful invocations of the method, the circuit will be closed. When a circuit is open a `CircuitBreakerOpenException` will be thrown.
+The `@CircuitBreaker` annotation allows you to prevent repeating timeout so that the failing services fail fast. The below code snippet means that the circuit is open once 2 (4 * 0.5) failures which occur during the rolling window of 4 consecutive invocations. The circuit will stay open for 1000ms. The circuit will then be closed after 5 consecutive successful invocations of the method. When a circuit is open a `CircuitBreakerOpenException` will be thrown.
 
 ```
 	 @PUT
@@ -111,7 +111,7 @@ The `@CircuitBreaker` annotation allows you to prevent repeating timeout so that
 ```
 
 ### @Bulkhead
-If you use @Bulkhead, metrics are added for how many concurrent calls to your method are currently executing, how often calls are rejected, how long calls take to return, and how long they spend queued (if you’re also using @Asynchronous). You can use @Bulkhead in conjunction with @Asynchronous. @Asynchronous causes an invocation to be executed by a different thread. The below example shows the usage of @bulkhead annotation, indicating that only 3 concurrent request to the API is allowed.
+If you use @Bulkhead, metrics are added for how many concurrent calls to your method are currently executing, how often calls are rejected, how long calls take to return, and how long they spend queued (if you’re also using @Asynchronous). You can use @Bulkhead in conjunction with @Asynchronous. @Asynchronous causes an invocation to be executed by a different thread. The below example shows the usage of @bulkhead annotation, indicating that only 3 concurrent requests to the API is allowed.
 
 ```
     @GET
@@ -128,7 +128,7 @@ If you use @Bulkhead, metrics are added for how many concurrent calls to your me
 ```
 
 ### @Fallback
-Fallback annotation allows you to deal with exceptions. The previous annotations increases the success rate of invocation but you cannot eliminate exception. When an exception occurs its wise to fall back to a different operation.A method can be annotated with @Fallback, which means the method will have Fallback policy applied. The fallback method needs to have same signature as the original method signature. @Fallback can be used in conjunction with any other annotation. The below code snippet means when the method failed and retry reaches its maximum retry, the method `fallBackMethodForFailingService` will be invoked. 
+Fallback annotation allows you to deal with exceptions. The previous annotations increases the success rate of invocation but you cannot eliminate exceptions. When an exception occurs its wise to fall back to a different operation. A method can be annotated with @Fallback, which means the method will have Fallback policy applied. The fallback method needs to have same signature as the original method signature. @Fallback can be used in conjunction with any other annotation. The below code snippet means that when the method failed and reaches its maximum retries, the method `fallBackMethodForFailingService` will be invoked. 
 
 ```
     @GET
@@ -275,7 +275,10 @@ When you click on vote link
 
 ![Vote Info](images/ui4.png)
 
+
 ### 5. Installing Prometheus Server
+
+> NOTE: In order for prometheus to scrapge fault tolerant metrics, you should hit each of the endpoints annonated with fault tolerant annotations.  The metrics query starts with `ft_`.
 
 Prometheus server is set up to scrape metrics from your microservices and gathers time series data which can saved in the database or can be directly fed to Grafana to visualize different metrics. As part of the previous step you have already installed Prometheus server. The deployment yaml file [grafana](manifests/deploy-prometheus) deploys the Prometheus server into the cluster which you can access on port 9090 after port forwarding. You can port forward using the following command:
 
@@ -283,9 +286,12 @@ Prometheus server is set up to scrape metrics from your microservices and gather
 kubectl port-forward pod/<prometheus-server-pod-name>  9090:9090
 ```
 
-Sample metrics graph for `thread count` on prometheus server:
+Searching falult tolerant metrics on prometheus server:
+![Prometheus dashboard](images/prometheus_ft_search.png)
 
-![Prometheus dashboard](images/prometheus-dashboard.png)
+Sample fault tolerant metrics graph for `@Bulkhead` on prometheus server:
+
+![Prometheus dashboard](images/prometheus_ft_bulkhead.png)
 
 > NOTE: Exposing metrics using prometheus server is not recommended as the metrics are not human readable.
 
@@ -316,11 +322,19 @@ Following are the steps to see metrics on grafana dashboard.
 	* Using Proxy	: In this approach, you need to add `http://<prometheus service name>:<port>` as the proxy 		url.
 		![Grafana Dashboard](images/add-datasource-proxy.png)
 
-* Import the JSON file [grafana dashboard](data/metrics-grafana-dashboard.json) into Grafana. This json file is the representation of what charts to display in the Grafana dashboard.
-![Import dashboard JSON](images/load-json.png)
-
-* The charts should be now loaded in the dashboard. The charts are real time. So, as you go through the webapp clicking each link, the charts on the Grafana dashboard will show spikes on each chart.
-![Grafana Metrics](images/grafana-metrics.png)
+* **Getting Usage Metrics:**  
+	* Import the JSON file [grafana metrics dashboard](data/metrics-grafana-dashboard.json) into Grafana by 	creating `new Dashboard` and clicking `Import`. This json file is the representation of what charts to 	display in the Grafana dashboard.
+	![Import dashboard JSON](images/grafana-import.png)
+	* The charts should be now loaded in the dashboard. The charts are real time. So, as you go through the 	webapp clicking each link, the charts on the Grafana dashboard will show spikes on each chart.
+	![Grafana Metrics](images/grafana-metrics.png)
+* **Getting Fault Tolerant Metrics:**  
+	* Import the JSON file [grafana fault tolerant dashboard](data/microprofile-fault-tolerance.json) into 	Grafana by creatiang 	`new Dashboard` and clicking `Import`. This json file is the representation of 	what fault tolerant charts to display in the Grafana dashboard.
+	![Import dashboard JSON](images/grafana-import.png)
+	* The charts should be now loaded in the dashboard. The charts are real time. So, as you go through the 	webapp clicking each link, the charts on the Grafana dashboard will show spikes on each chart.
+	* You should be able to see all the methods that you have annotated with fault tolerant annotations on 	the top left. You can select each and see the graphs accordingly.
+	![Grafana Metrics](images/bulkhead-grafana.png) 
+	
+	> NOTE: Each row represents different fault tolerant annonations with multiple panels to show graphs for 	different metrics.
 
 
 
