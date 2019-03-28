@@ -47,6 +47,109 @@ The main design is to separate execution logic from execution. The execution can
 
 All you need to do is to add these annotations to the methods or bean classes you would like to achieve fault tolerance.
 
+## Using Microprofile Fault Tolerant Annotations
+
+### @Retry
+The `@Retry` annotation allows you to define a criteria on when to retry. The below example is configured to retry up to 5 times till the duration of 1000ms and when an Exception is occurred.
+
+```
+@GET
+    @Path("/attendee/retries")
+    @Produces(APPLICATION_JSON)
+    @Counted(name="io.microprofile.showcase.vote.api.SessionVote.getAllAttendees.monotonic.absolute",monotonic=true,absolute=true,tags="app=vote")
+    @Retry(maxRetries = 5, maxDuration= 1000, retryOn = {Exception.class})
+    public Collection<Attendee> getAllAttendeesRetries() {
+        Collection<Attendee> attendees = selectedAttendeeDAO.getAllAttendees();
+        if(attendees == null){
+            throw new RuntimeException("There must be attendees to run the meetings.");
+        }
+        return attendees;
+    }
+```
+
+### @Timeout
+The `@Timeout` annotation allows you to define a duration for timeout. It prevents from an execution to wait for ever. In the below example the timeout is 100ms after which the method will fail with a `TimeoutException`.
+
+```
+/**
+     * Making returning of all slow schedules.
+     * @return
+     */
+    @GET
+    @Path("/all")
+    @Timed
+    @Metric(name="io.microprofile.showcase.schedule.resources.ScheduleResource.allSchedules.Metric",tags="app=schedule")
+    @Timeout(100)
+    public Response allSchedules() {
+        final List<Schedule> allSchedules = scheduleDAO.getAllSchedules();
+        final GenericEntity<List<Schedule>> entity = buildEntity(allSchedules);
+        try {
+            Thread.sleep(102);
+        } catch (InterruptedException e) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        return Response.ok(entity).build();
+    }
+```
+
+### @CircuitBreaker
+The `@CircuitBreaker` annotation allows you to prevent repeating timeout so that the failing services fail fast. The below code snippet means that the circuit is open once 2 (4 * 0.5) failures which occur during the rolling window of 4 consecutive invocations. The circuit will stay open for 1000ms. The circuit will then be closed after 5 consecutive successful invocations of the method. When a circuit is open a `CircuitBreakerOpenException` will be thrown.
+
+```
+	 @PUT
+    @Path("/search")
+    @Counted(monotonic = true,tags="app=speaker")
+    @CircuitBreaker(requestVolumeThreshold=4, failureRatio=0.50, delay=1000, successThreshold=5)
+    public Set<Speaker> searchFailure(final Speaker speaker) {
+        if (isServiceBroken.get()) {
+            throw new RuntimeException("Breaking Service failed!");
+        }
+        final Set<Speaker> speakers = this.speakerDAO.find(speaker);
+        return speakers;
+    }
+
+```
+
+### @Bulkhead
+If you use @Bulkhead, metrics are added for how many concurrent calls to your method are currently executing, how often calls are rejected, how long calls take to return, and how long they spend queued (if you’re also using @Asynchronous). You can use @Bulkhead in conjunction with @Asynchronous. @Asynchronous causes an invocation to be executed by a different thread. The below example shows the usage of @bulkhead annotation, indicating that only 3 concurrent requests to the API is allowed.
+
+```
+    @GET
+    @Timed
+    @Metric
+    @Path("/getAllSpeakers")
+    @Counted(name="io.microprofile.showcase.speaker.rest.monotonic.getAllSpeakers.absolute",monotonic = true,tags="app=speaker")
+    @Bulkhead(3)
+    public Collection<Speaker> getAllSpeakers() {
+        final Collection<Speaker> speakers = this.speakerDAO.getAllSpeakers();
+        speakers.forEach(this::addHyperMedia);
+        return speakers;
+    }
+```
+
+### @Fallback
+Fallback annotation allows you to deal with exceptions. The previous annotations increases the success rate of invocation but you cannot eliminate exceptions. When an exception occurs its wise to fall back to a different operation. A method can be annotated with @Fallback, which means the method will have Fallback policy applied. The fallback method needs to have same signature as the original method signature. @Fallback can be used in conjunction with any other annotation. The below code snippet means that when the method failed and reaches its maximum retries, the method `fallBackMethodForFailingService` will be invoked. 
+
+```
+    @GET
+    @Path("/failingService")
+    @Counted(monotonic = true,tags="app=speaker")
+    @Retry(maxRetries = 2)
+    @Fallback(fallbackMethod = "fallBackMethodForFailingService")
+    public Speaker retrieveFailingService() {
+        throw new RuntimeException("Retrieve service failed!");
+    }
+
+    /**
+     * Method to fallback on when you receive run time errors
+     * @return
+     */
+    private Speaker fallBackMethodForFailingService() {
+        return new Speaker();
+    }
+```
+
+
 ## Getting Started
 
 ### Kubernetes
@@ -83,7 +186,9 @@ cd java-microprofile-fault-monitoring
 
 ### 2. Optional Step - Build Application
 
-If you want to [build the application](docs/build-instructions.md) yourself now would be a good time to do that. Please follow the rebuild steps if you'd like to re-create images with the latest available Open Liberty version. However for the sake of demonstration you can use the images that we've already built and uploaded to the journeycode Docker repository.
+If you want to [build the application](docs/build-instructions.md) yourself now would be a good time to do that. Please follow the rebuild steps if you'd like to re-create images with the latest available Open Liberty version. However for the sake of demonstration you can use the images that we've already built and uploaded to the journeycode Docker repository. You can find the existing images by clicking the below URL:
+
+`https://cloud.docker.com/u/journeycode/repository/list?name=microservice-fault&namespace=journeycode&page=1`
 
 ### 3. Create Kuberenetes Cluster
 Login to IBM Cloud and search for `kubernetes service` and select the service to create one.
@@ -93,14 +198,6 @@ Login to IBM Cloud and search for `kubernetes service` and select the service to
 Click `Create` and choose the configuration needed for your requirement and click `Create Cluster`.
 
 ### 4. Deploy Microservices
-
-Each microservices (Speaker, Session, Vote, Schedule) uses Microprofile Metrics which provides a way to register application specific metrics in the application scope. The REST-ful endpoints are annonated with metric annotations such as:
-
-* @Gauge - Denotes a gauge, which samples the value of the annotated object.
-* @Timed - Denotes a timer, which tracks duration of the annotated object.
-* @Metered - Denotes a meter, which tracks the frequency of invocations of the annotated object.
-* @Count - Denotes a counter, which counts the invocations of the annotated object.
-* @Metric - An annotation that contains the metadata information when requesting a metric to be injected or produced. This annotation can be used on fields of type Meter, Timer, Counter, and Histogram. For Gauge, the @Metric annotation can only be used on producer methods/fields.
 
 Now, deploy the microservices with the commands:
 
@@ -178,7 +275,10 @@ When you click on vote link
 
 ![Vote Info](images/ui4.png)
 
+
 ### 5. Installing Prometheus Server
+
+> NOTE: In order for prometheus to scrapge fault tolerant metrics, you should hit each of the endpoints annonated with fault tolerant annotations.  The metrics query starts with `ft_`.
 
 Prometheus server is set up to scrape metrics from your microservices and gathers time series data which can saved in the database or can be directly fed to Grafana to visualize different metrics. As part of the previous step you have already installed Prometheus server. The deployment yaml file [grafana](manifests/deploy-prometheus) deploys the Prometheus server into the cluster which you can access on port 9090 after port forwarding. You can port forward using the following command:
 
@@ -186,9 +286,12 @@ Prometheus server is set up to scrape metrics from your microservices and gather
 kubectl port-forward pod/<prometheus-server-pod-name>  9090:9090
 ```
 
-Sample metrics graph for `thread count` on prometheus server:
+Searching falult tolerant metrics on prometheus server:
+![Prometheus dashboard](images/prometheus_ft_search.png)
 
-![Prometheus dashboard](images/prometheus-dashboard.png)
+Sample fault tolerant metrics graph for `@Bulkhead` on prometheus server:
+
+![Prometheus dashboard](images/prometheus_ft_bulkhead.png)
 
 > NOTE: Exposing metrics using prometheus server is not recommended as the metrics are not human readable.
 
@@ -219,11 +322,19 @@ Following are the steps to see metrics on grafana dashboard.
 	* Using Proxy	: In this approach, you need to add `http://<prometheus service name>:<port>` as the proxy 		url.
 		![Grafana Dashboard](images/add-datasource-proxy.png)
 
-* Import the JSON file [grafana dashboard](data/metrics-grafana-dashboard.json) into Grafana. This json file is the representation of what charts to display in the Grafana dashboard.
-![Import dashboard JSON](images/load-json.png)
-
-* The charts should be now loaded in the dashboard. The charts are real time. So, as you go through the webapp clicking each link, the charts on the Grafana dashboard will show spikes on each chart.
-![Grafana Metrics](images/grafana-metrics.png)
+* **Getting Usage Metrics:**  
+	* Import the JSON file [grafana metrics dashboard](data/metrics-grafana-dashboard.json) into Grafana by 	creating `new Dashboard` and clicking `Import`. This json file is the representation of what charts to 	display in the Grafana dashboard.
+	![Import dashboard JSON](images/grafana-import.png)
+	* The charts should be now loaded in the dashboard. The charts are real time. So, as you go through the 	webapp clicking each link, the charts on the Grafana dashboard will show spikes on each chart.
+	![Grafana Metrics](images/grafana-metrics.png)
+* **Getting Fault Tolerant Metrics:**  
+	* Import the JSON file [grafana fault tolerant dashboard](data/microprofile-fault-tolerance.json) into 	Grafana by creatiang 	`new Dashboard` and clicking `Import`. This json file is the representation of 	what fault tolerant charts to display in the Grafana dashboard.
+	![Import dashboard JSON](images/grafana-import.png)
+	* The charts should be now loaded in the dashboard. The charts are real time. So, as you go through the 	webapp clicking each link, the charts on the Grafana dashboard will show spikes on each chart.
+	* You should be able to see all the methods that you have annotated with fault tolerant annotations on 	the top left. You can select each and see the graphs accordingly.
+	![Grafana Metrics](images/bulkhead-grafana.png) 
+	
+	> NOTE: Each row represents different fault tolerant annonations with multiple panels to show graphs for 	different metrics.
 
 
 
