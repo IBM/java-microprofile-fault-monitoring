@@ -186,7 +186,9 @@ cd java-microprofile-fault-monitoring
 
 ### 2. Optional Step - Build Application
 
-If you want to [build the application](docs/build-instructions.md) yourself now would be a good time to do that. Please follow the rebuild steps if you'd like to re-create images with the latest available Open Liberty version. However for the sake of demonstration you can use the images that we've already built and uploaded to the journeycode Docker repository.
+If you want to [build the application](docs/build-instructions.md) yourself now would be a good time to do that. Please follow the rebuild steps if you'd like to re-create images with the latest available Open Liberty version. However for the sake of demonstration you can use the images that we've already built and uploaded to the journeycode Docker repository. You can find the existing images by clicking the below URL:
+
+`https://cloud.docker.com/u/journeycode/repository/list?name=microservice-fault&namespace=journeycode&page=1`
 
 ### 3. Create Kuberenetes Cluster
 Login to IBM Cloud and search for `kubernetes service` and select the service to create one.
