@@ -14,9 +14,9 @@ spec:
         component: core
     spec:
       containers:
-      - image: grafana/grafana:4.2.0
+      - image: grafana/grafana:6.0.2                
         name: grafana-core
-        imagePullPolicy: Always
+        imagePullPolicy: Always        
         # env:
         resources:
           # keep request = limit to keep this container in guaranteed class
@@ -51,9 +51,34 @@ spec:
         volumeMounts:
         - name: grafana-persistent-storage
           mountPath: /var/lib/grafana
+          readOnly: false  
+        - mountPath: /etc/grafana/provisioning/datasources
+          name: grafana-datasources
+          readOnly: false
+        - mountPath: /etc/grafana/provisioning/dashboards
+          name: grafana-dashboards
+          readOnly: false   
+        - mountPath: /grafana-dashboard-definitions/0/mp-metrics
+          name: grafana-dashboard-mp-metrics
+          readOnly: false
+        - mountPath: /grafana-dashboard-definitions/0/fault-tolerant
+          name: grafana-dashboard-fault-tolerant
+          readOnly: false  
       volumes:
       - name: grafana-persistent-storage
         emptyDir: {}
+      - name: grafana-datasources
+        configMap:
+          name: grafana-datasource-configuration
+      - configMap:
+          name: grafana-dashboards
+        name: grafana-dashboards
+      - configMap:
+          name: grafana-dashboard-mp-metrics
+        name: grafana-dashboard-mp-metrics
+      - configMap:
+          name: grafana-dashboard-fault-tolerant
+        name: grafana-dashboard-fault-tolerant
        
 ---
 apiVersion: v1

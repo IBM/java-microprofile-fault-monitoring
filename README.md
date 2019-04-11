@@ -53,7 +53,7 @@ All you need to do is to add these annotations to the methods or bean classes yo
 The `@Retry` annotation allows you to define a criteria on when to retry. The below example is configured to retry up to 5 times till the duration of 1000ms and when an Exception is occurred.
 
 ```
-@GET
+	@GET
     @Path("/attendee/retries")
     @Produces(APPLICATION_JSON)
     @Counted(name="io.microprofile.showcase.vote.api.SessionVote.getAllAttendees.monotonic.absolute",monotonic=true,absolute=true,tags="app=vote")
@@ -71,7 +71,7 @@ The `@Retry` annotation allows you to define a criteria on when to retry. The be
 The `@Timeout` annotation allows you to define a duration for timeout. It prevents from an execution to wait for ever. In the below example the timeout is 100ms after which the method will fail with a `TimeoutException`.
 
 ```
-/**
+	 /**
      * Making returning of all slow schedules.
      * @return
      */
@@ -96,7 +96,7 @@ The `@Timeout` annotation allows you to define a duration for timeout. It preven
 The `@CircuitBreaker` annotation allows you to prevent repeating timeout so that the failing services fail fast. The below code snippet means that the circuit is open once 2 (4 * 0.5) failures which occur during the rolling window of 4 consecutive invocations. The circuit will stay open for 1000ms. The circuit will then be closed after 5 consecutive successful invocations of the method. When a circuit is open a `CircuitBreakerOpenException` will be thrown.
 
 ```
-	 @PUT
+	@PUT
     @Path("/search")
     @Counted(monotonic = true,tags="app=speaker")
     @CircuitBreaker(requestVolumeThreshold=4, failureRatio=0.50, delay=1000, successThreshold=5)
@@ -128,7 +128,7 @@ If you use @Bulkhead, metrics are added for how many concurrent calls to your me
 ```
 
 ### @Fallback
-Fallback annotation allows you to deal with exceptions. The previous annotations increases the success rate of invocation but you cannot eliminate exceptions. When an exception occurs its wise to fall back to a different operation. A method can be annotated with @Fallback, which means the method will have Fallback policy applied. The fallback method needs to have same signature as the original method signature. @Fallback can be used in conjunction with any other annotation. The below code snippet means that when the method failed and reaches its maximum retries, the method `fallBackMethodForFailingService` will be invoked. 
+Fallback annotation allows you to deal with exceptions. The previous annotations increases the success rate of invocation but you cannot eliminate exceptions. When an exception occurs it's wise to fall back to a different operation. A method can be annotated with @Fallback, which means the method will have Fallback policy applied. The fallback method needs to have same signature as the original method signature. @Fallback can be used in conjunction with any other annotation. The below code snippet means that when the method failed and reaches it's maximum retries, the method `fallBackMethodForFailingService` will be invoked. 
 
 ```
     @GET
@@ -184,112 +184,33 @@ cd java-microprofile-fault-monitoring
 
 ```
 
-### 2. Optional Step - Build Application
+### 2. Build and Deploy Using Kubernetes Cluster
 
 If you want to [build the application](docs/build-instructions.md) yourself now would be a good time to do that. Please follow the rebuild steps if you'd like to re-create images with the latest available Open Liberty version. However for the sake of demonstration you can use the images that we've already built and uploaded to the journeycode Docker repository. You can find the existing images by clicking the below URL:
 
 `https://cloud.docker.com/u/journeycode/repository/list?name=microservice-fault&namespace=journeycode&page=1`
 
-### 3. Create Kuberenetes Cluster
-Login to IBM Cloud and search for `kubernetes service` and select the service to create one.
+Since this is the continuation of previous pattern, Please go through the steps 3 to 4, to deploy the application, using following link but on this repostiory.
 
-![Kubernetes Service](images/kubernetes-service.png)
+[Build and Deploy Using Kubernetes Cluster](https://github.com/IBM/java-microprofile-metrics-on-kubernetes#3-create-kuberenetes-cluster)
 
-Click `Create` and choose the configuration needed for your requirement and click `Create Cluster`.
-
-### 4. Deploy Microservices
-
-Now, deploy the microservices with the commands:
-
-If using Minikube / ICP run:
-```bash
-$ cd scripts
-$ ./set-ingress-minikube.sh
-```
-
-If using IBM Cloud Kubernetes Service, run:
-
-```bash
-$ cd scripts
-$ ./set-ingress-host [cluster name]
-$ ./cloudant-secret.sh
-```
-
-Finally, deploy all microservices:
-
-```bash
-$ kubectl create -f manifests
-persistentvolume "cloudant-pv" created
-persistentvolumeclaim "cloudant-pv-claim" created
-service "cloudant-service" created
-deployment "cloudant-db" created
-...
-...
-```
-
-_Note: this will deploy all of the kubernetes manifests in the [manifests/](manifests/) directory. Take some time to explore their contents to get an idea of the resources being used to deploy and expose the app._
-
-After you have created all the services and deployments, wait for 10 to 15 minutes. You can check the status of your deployment on Kubernetes UI. If using Minikube, run 'kubectl proxy' and go to URL 'http://127.0.0.1:8001/ui' to check when the application containers are ready.
-
-![Kubernetes Status Page](images/kube_ui.png)
-
-
-After a few minutes you should be able to access the application. Part of our deployment is a [Kubernetes Ingress resource](manifests/deploy-ingress.yaml). If your Kubernetes cluster already has an ingress service such as IBM Cloud Private then you should be able to access the application with no further changes.
-
-However if you are using minikube, or a Kubernetes cluster that does not have an ingress service you have one more step before you can access your cluster. On minikube you can do the following:
-
-```bash
-$ minikube addons enable ingress
-ingress was successfully enabled
-$ minikube ip
-192.168.99.100
-```
-
-With an Ingress controller enabled you can access the app via the IP provided by minikube above.
-
-If running on IBM Cloud Kubernetes Service, you will use the hostname to access the application, which
-you can retrieve with the following:
-
-```bash
-$ kubectl get ing
-NAME                   HOSTS                                          ADDRESS          PORTS     AGE
-microprofile-ingress   microkube.us-east.containers.appdomain.cloud   ***.***.***.***   80, 443   1m
-```
-
-
-Now you can use the link **http://[Public URL]** to access your application in a browser.
-
-Web application home page
-
-![Web-app Home Page](images/ui1.png)
-
-When you click on speaker name
-
-![Speaker Info](images/ui2.png)
-
-When you click on schedules link
-
-![Schedule Info](images/ui3.png)
-
-When you click on vote link
-
-![Vote Info](images/ui4.png)
-
-### 5. Runnig the endpoints
-To access the basic and fault tolerant metrics, you need to make sure that you hit each of the endpoints. You should run the application by going to the URL:
+At this point your app should be running. You can access the application by going to the URL:
 `http://<cluster hostname/domain name >`
-you can get the cluster domain name by running
-`kubectl get ing`
 
-Then you should click each of the links in your application so that its hitting the endpoints in each of the microservices. For some of the endpoints if you cannot access through the application you can hit it using `curl` command. for example:
+To access the basic and fault tolerant metrics, you need to make sure that you hit each of the endpoints. You can do that by clicking each of the links in your application so that it's hitting the endpoints in each of the microservices. For some of the endpoints if you cannot access through the application you can hit it using `curl` command. for example:
 
 `curl http://sanjeev-cluster-mp-metrics.us-south.containers.appdomain.cloud/speaker/getAllSpeakers` will hit the endpoint where `@Bulkhead` annotation is used.
 
-### 6. Installing Prometheus Server
 
-> NOTE: In order for prometheus to scrapge fault tolerant metrics, you should hit each of the endpoints annonated with fault tolerant annotations.  The metrics query starts with `ft_`.
+### 3. Installing Prometheus Server
 
-Prometheus server is set up to scrape metrics from your microservices and gathers time series data which can saved in the database or can be directly fed to Grafana to visualize different metrics. As part of the previous step you have already installed Prometheus server. The deployment yaml file [grafana](manifests/deploy-prometheus) deploys the Prometheus server into the cluster which you can access on port 9090 after port forwarding. You can port forward using the following command:
+> NOTE: In order for prometheus to scrape fault tolerant metrics, you should hit each of the endpoints annonated with fault tolerant annotations.  The metrics query starts with `ft_`.
+
+Prometheus server is set up to scrape metrics from your microservices and gathers time series data which can saved in the database or can be directly fed to Grafana to visualize different metrics. The deployment yaml file [deploy-prometheus.yml](manifests/deploy-prometheus.yml) deploys the Prometheus server into the cluster which you can be accessed on port 9090 after port forwarding.
+ 
+> NOTE: This is only for development purpose. Grafana is pre-configured to connect to Prometheus server to get metrics.
+
+To access Prometheus server,you can port forward using the following command although it's not recommended. 
 
 ```bash
 kubectl port-forward pod/<prometheus-server-pod-name>  9090:9090
@@ -302,11 +223,11 @@ Sample fault tolerant metrics graph for `@Bulkhead` on prometheus server:
 
 ![Prometheus dashboard](images/prometheus_ft_bulkhead.png)
 
-> NOTE: Exposing metrics using prometheus server is not recommended as the metrics are not human readable.
+> NOTE: Exposing metrics using Prometheus server is not recommended as the metrics are not human readable.
 
-### 7. Installing Grafana
+### 4	. Installing Grafana
 
-Grafana is a platform for analytics and monitoring. You can create different charts based on the metrics gathered by Prometheus server. The deployment yaml file [Prometheus server](manifests/deploy-grafana.yml) installs the Grafana dashboard into the cluster which you can access on port 3000 after port forwarding. To run locally you can use the following command:
+Grafana is a platform for analytics and monitoring. You can create different charts based on the metrics gathered by Prometheus server. The deployment yaml file [deploy-grafana.yml](manifests/deploy-grafana.yml) installs the Grafana dashboard into the cluster which you can access on port 3000 after port forwarding. To run locally you can use the following command:
 
 ```bash
 kubectl port-forward pod/<grafana-pod-name>  3000:3000
@@ -314,9 +235,13 @@ kubectl port-forward pod/<grafana-pod-name>  3000:3000
 
 Following are the steps to see metrics on grafana dashboard.
 
-* Launch `http://locahost:3000/metrics` which will open up Grafana dashboard.
+* Launch `http://localhost:3000` which will open up Grafana dashboard.
 * Login using the default username/password which is admin/admin.
-* Add Datasource.
+* The Grafana Dashboard is already pre-configured to connect to Prometheus database using proxy and there are two dashboards which are already pre-configured to load.
+
+![Grafana Dashboard](images/grafana-home.png)
+
+* You can also add Datasource from the grafana console.
 
 ![Grafana Dashboard](images/grafana1.png)
 
