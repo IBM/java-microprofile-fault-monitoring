@@ -128,7 +128,7 @@ If you use @Bulkhead, metrics are added for how many concurrent calls to your me
 ```
 
 ### @Fallback
-Fallback annotation allows you to deal with exceptions. The previous annotations increases the success rate of invocation but you cannot eliminate exceptions. When an exception occurs its wise to fall back to a different operation. A method can be annotated with @Fallback, which means the method will have Fallback policy applied. The fallback method needs to have same signature as the original method signature. @Fallback can be used in conjunction with any other annotation. The below code snippet means that when the method failed and reaches its maximum retries, the method `fallBackMethodForFailingService` will be invoked. 
+Fallback annotation allows you to deal with exceptions. The previous annotations increases the success rate of invocation but you cannot eliminate exceptions. When an exception occurs it's wise to fall back to a different operation. A method can be annotated with @Fallback, which means the method will have Fallback policy applied. The fallback method needs to have same signature as the original method signature. @Fallback can be used in conjunction with any other annotation. The below code snippet means that when the method failed and reaches it's maximum retries, the method `fallBackMethodForFailingService` will be invoked. 
 
 ```
     @GET
@@ -197,7 +197,7 @@ Since this is the continuation of previous pattern, Please go through the steps 
 At this point your app should be running. You can access the application by going to the URL:
 `http://<cluster hostname/domain name >`
 
-To access the basic and fault tolerant metrics, you need to make sure that you hit each of the endpoints. You can do that by clicking each of the links in your application so that its hitting the endpoints in each of the microservices. For some of the endpoints if you cannot access through the application you can hit it using `curl` command. for example:
+To access the basic and fault tolerant metrics, you need to make sure that you hit each of the endpoints. You can do that by clicking each of the links in your application so that it's hitting the endpoints in each of the microservices. For some of the endpoints if you cannot access through the application you can hit it using `curl` command. for example:
 
 `curl http://sanjeev-cluster-mp-metrics.us-south.containers.appdomain.cloud/speaker/getAllSpeakers` will hit the endpoint where `@Bulkhead` annotation is used.
 
@@ -206,11 +206,11 @@ To access the basic and fault tolerant metrics, you need to make sure that you h
 
 > NOTE: In order for prometheus to scrape fault tolerant metrics, you should hit each of the endpoints annonated with fault tolerant annotations.  The metrics query starts with `ft_`.
 
-Prometheus server is set up to scrape metrics from your microservices and gathers time series data which can saved in the database or can be directly fed to Grafana to visualize different metrics.The deployment yaml file [deploy-prometheus.yml](manifests/deploy-prometheus.yml) deploys the Prometheus server into the cluster which you can be accessed on port 9090 after port forwarding.
+Prometheus server is set up to scrape metrics from your microservices and gathers time series data which can saved in the database or can be directly fed to Grafana to visualize different metrics. The deployment yaml file [deploy-prometheus.yml](manifests/deploy-prometheus.yml) deploys the Prometheus server into the cluster which you can be accessed on port 9090 after port forwarding.
  
 > NOTE: This is only for development purpose. Grafana is pre-configured to connect to Prometheus server to get metrics.
 
-To access Prometheus server,you can port forward using the following command although its not recommended. 
+To access Prometheus server,you can port forward using the following command although it's not recommended. 
 
 ```bash
 kubectl port-forward pod/<prometheus-server-pod-name>  9090:9090
@@ -223,7 +223,7 @@ Sample fault tolerant metrics graph for `@Bulkhead` on prometheus server:
 
 ![Prometheus dashboard](images/prometheus_ft_bulkhead.png)
 
-> NOTE: Exposing metrics using prometheus server is not recommended as the metrics are not human readable.
+> NOTE: Exposing metrics using Prometheus server is not recommended as the metrics are not human readable.
 
 ### 4	. Installing Grafana
 
