@@ -256,16 +256,11 @@ Following are the steps to see metrics on grafana dashboard.
 	* Using Proxy	: In this approach, you need to add `http://<prometheus service name>:<port>` as the proxy 		url.
 		![Grafana Dashboard](images/add-datasource-proxy.png)
 
-* **Getting Usage Metrics:**  
-	* Import the JSON file [grafana metrics dashboard](data/metrics-grafana-dashboard.json) into Grafana by 	creating `new Dashboard` and clicking `Import`. This json file is the representation of what charts to 	display in the Grafana dashboard.
-	![Import dashboard JSON](images/grafana-import.png)
-	* The charts should be now loaded in the dashboard. The charts are real time. So, as you go through the 	webapp clicking each link, the charts on the Grafana dashboard will show spikes on each chart.
+* **Getting Usage Metrics:**  	
+	* The dashboards are pre-configured to load automatically. Select the dashboard that starts with name `Liberty-	Metrics...`. The charts are real time. So, as you go through the webapp clicking each link, the charts on the 	Grafana dashboard will show spikes on each chart.
 	![Grafana Metrics](images/grafana-metrics.png)
 * **Getting Fault Tolerant Metrics:**  
-	* Import the JSON file [grafana fault tolerant dashboard](data/microprofile-fault-tolerance.json) into 	Grafana by creatiang 	`new Dashboard` and clicking `Import`. This json file is the representation of 	what fault tolerant charts to display in the Grafana dashboard.
-	![Import dashboard JSON](images/grafana-import.png)
-	* The charts should be now loaded in the dashboard. The charts are real time. So, as you go through the 	webapp clicking each link, the charts on the Grafana dashboard will show spikes on each chart.
-	* You should be able to see all the methods that you have annotated with fault tolerant annotations on 	the top left. You can select each and see the graphs accordingly.
+	* Select the dashboard that starts with name `Microprofile Fault Tolerance`. You should be able to see different 	panels for each fault tolerant annotations. Going into each panel you should be able to see graphs for each 	annotations. Select the appropriate method from the `method` drop down at the top and see the graphs on the 	annotation panel that is associate with this method.
 	![Grafana Metrics](images/bulkhead-grafana.png) 
 	
 	> NOTE: Each row represents different fault tolerant annonations with multiple panels to show graphs for 	different metrics.
