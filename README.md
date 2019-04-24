@@ -110,6 +110,20 @@ The `@CircuitBreaker` annotation allows you to prevent repeating timeout so that
 
 ```
 
+You can combine the circuit breaker with other patterns, like the retry or the timeout. This way you can control the failures that lead to an open circuit.
+
+```
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
+
+@CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.75, delay = 1000, successThreshold = 10, )
+@Retry(retryOn = {RuntimeException.class, TimeoutException.class}, maxRetries = 7)
+@Timeout(500)
+public String callSomeService() {...}
+
+```
+
 ### @Bulkhead
 If you use @Bulkhead, metrics are added for how many concurrent calls to your method are currently executing, how often calls are rejected, how long calls take to return, and how long they spend queued (if you’re also using @Asynchronous). You can use @Bulkhead in conjunction with @Asynchronous. @Asynchronous causes an invocation to be executed by a different thread. The below example shows the usage of @bulkhead annotation, indicating that only 3 concurrent requests to the API is allowed.
 
@@ -265,6 +279,83 @@ Following are the steps to see metrics on grafana dashboard.
 	
 	> NOTE: Each row represents different fault tolerant annonations with multiple panels to show graphs for 	different metrics.
 
+## Sample Output
+
+### @Timeout
+
+When @Timeout annotation is used, it results in timeout if it takes longer than the time specified which in this case is 3 seconds.
+
+```
+@POST
+    @Counted(monotonic = true,tags="app=schedule")
+    @Timeout(3000)
+    public Response add(final Schedule schedule) {
+        final Schedule created = scheduleDAO.addSchedule(schedule);
+        return Response.created(URI.create("/" + created.getId()))
+                .entity(created)
+                .build();
+    }
+```
+
+![Timeout](images/timeout.png)
+
+If @Timeout was not used it would take long and eventually give you an output or the application times out.
+
+![Timeout](images/without-timeout.png)
+
+### @Bulkhead
+
+When @Bulkhead is used, the number specified is the most thread allowed to access the API. For example if its used with value 3 it results in BulkException. [Apache Jmeter](https://jmeter.apache.org/) is used to call multiple threads on the API.
+
+```
+@GET
+    @Timed
+    @Metric
+    @Counted(name="io.microprofile.showcase.speaker.rest.monotonic.retrieveAll.absolute",monotonic = true,tags="app=speaker")
+    @Bulkhead(value = 3)
+    public Collection<Speaker> retrieveAll() {
+        final Collection<Speaker> speakers = this.speakerDAO.getSpeakers();
+        speakers.forEach(this::addHyperMedia);
+        return speakers;
+    }
+
+```
+
+
+![Timeout](images/bulkhead-exception.png)
+
+For multiple thread calls to the API within the limit specified in Bulkhead, it would pass through and gives you the results back.
+
+![Timeout](images/bulkhead-success.png)
+
+
+### @Fallback
+
+When @Fallback is used, even though the method throws runtime exception, the exception is logged and it falls back to another method that returns a proper response back to the user which in this case is a empty `Speaker` object.
+
+```
+@GET
+    @Path("/failingService")
+    @Counted(monotonic = true,tags="app=speaker")
+    @Fallback(fallbackMethod = "fallBackMethodForFailingService")
+    public Speaker retrieveFailingService() {
+        throw new RuntimeException("Retrieve service failed!");
+    }
+
+    /**
+     * Method to fallback on when you receive run time errors
+     * @return
+     */
+    private Speaker fallBackMethodForFailingService() {
+        return new Speaker();
+    }   
+ 
+```
+![Timeout](images/fallback-with-annotation.png)
+
+If the @Fallback was not used it would result in `500 internal server error`.
+
+![Timeout](images/fallback-without-annotation.png)
 
 
 ## Troubleshooting
