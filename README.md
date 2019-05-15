@@ -53,10 +53,10 @@ All you need to do is to add these annotations to the methods or bean classes yo
 The `@Retry` annotation allows you to define a criteria on when to retry. The below example is configured to retry up to 5 times till the duration of 1000ms and when an Exception is occurred.
 
 ```
-	@GET
+    @GET
     @Path("/attendee/retries")
     @Produces(APPLICATION_JSON)
-    @Counted(name="io.microprofile.showcase.vote.api.SessionVote.getAllAttendees.monotonic.absolute",monotonic=true,absolute=true,tags="app=vote")
+ @Counted(name="io.microprofile.showcase.vote.api.SessionVote.getAllAttendees.monotonic.absolute",monotonic=true,absolute=true,tags="app=vote")
     @Retry(maxRetries = 5, maxDuration= 1000, retryOn = {Exception.class})
     public Collection<Attendee> getAllAttendeesRetries() {
         Collection<Attendee> attendees = selectedAttendeeDAO.getAllAttendees();
@@ -71,7 +71,7 @@ The `@Retry` annotation allows you to define a criteria on when to retry. The be
 The `@Timeout` annotation allows you to define a duration for timeout. It prevents from an execution to wait for ever. In the below example the timeout is 100ms after which the method will fail with a `TimeoutException`.
 
 ```
-	 /**
+   /**
      * Making returning of all slow schedules.
      * @return
      */
@@ -96,7 +96,7 @@ The `@Timeout` annotation allows you to define a duration for timeout. It preven
 The `@CircuitBreaker` annotation allows you to prevent repeating timeout so that the failing services fail fast. The below code snippet means that the circuit is open once 2 (4 * 0.5) failures which occur during the rolling window of 4 consecutive invocations. The circuit will stay open for 1000ms. The circuit will then be closed after 5 consecutive successful invocations of the method. When a circuit is open a `CircuitBreakerOpenException` will be thrown.
 
 ```
-	@PUT
+    @PUT
     @Path("/search")
     @Counted(monotonic = true,tags="app=speaker")
     @CircuitBreaker(requestVolumeThreshold=4, failureRatio=0.50, delay=1000, successThreshold=5)
