@@ -52,44 +52,44 @@ All you need to do is to add these annotations to the methods or bean classes yo
 ### @Retry
 The `@Retry` annotation allows you to define a criteria on when to retry. The below example is configured to retry up to 5 times till the duration of 1000ms and when an Exception is occurred.
 
-```
-	@GET
-    @Path("/attendee/retries")
-    @Produces(APPLICATION_JSON)
-    @Counted(name="io.microprofile.showcase.vote.api.SessionVote.getAllAttendees.monotonic.absolute",monotonic=true,absolute=true,tags="app=vote")
-    @Retry(maxRetries = 5, maxDuration= 1000, retryOn = {Exception.class})
-    public Collection<Attendee> getAllAttendeesRetries() {
-        Collection<Attendee> attendees = selectedAttendeeDAO.getAllAttendees();
-        if(attendees == null){
-            throw new RuntimeException("There must be attendees to run the meetings.");
-        }
-        return attendees;
+```java
+@GET
+@Path("/attendee/retries")
+@Produces(APPLICATION_JSON)
+@Counted(name="io.microprofile.showcase.vote.api.SessionVote.getAllAttendees.monotonic.absolute",monotonic=true,absolute=true,tags="app=vote")
+@Retry(maxRetries = 5, maxDuration= 1000, retryOn = {Exception.class})
+public Collection<Attendee> getAllAttendeesRetries() {
+    Collection<Attendee> attendees = selectedAttendeeDAO.getAllAttendees();
+    if(attendees == null){
+        throw new RuntimeException("There must be attendees to run the meetings.");
     }
+    return attendees;
+}
 ```
 
 ### @Timeout
 The `@Timeout` annotation allows you to define a duration for timeout. It prevents from an execution to wait for ever. In the below example the timeout is 100ms after which the method will fail with a `TimeoutException`.
 
-```
-	 /**
-     * Making returning of all slow schedules.
-     * @return
-     */
-    @GET
-    @Path("/all")
-    @Timed
-    @Metric(name="io.microprofile.showcase.schedule.resources.ScheduleResource.allSchedules.Metric",tags="app=schedule")
-    @Timeout(100)
-    public Response allSchedules() {
-        final List<Schedule> allSchedules = scheduleDAO.getAllSchedules();
-        final GenericEntity<List<Schedule>> entity = buildEntity(allSchedules);
-        try {
-            Thread.sleep(102);
-        } catch (InterruptedException e) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-        return Response.ok(entity).build();
+```java
+/**
+ * Making returning of all slow schedules.
+ * @return
+ */
+@GET
+@Path("/all")
+@Timed
+@Metric(name="io.microprofile.showcase.schedule.resources.ScheduleResource.allSchedules.Metric",tags="app=schedule")
+@Timeout(100)
+public Response allSchedules() {
+    final List<Schedule> allSchedules = scheduleDAO.getAllSchedules();
+    final GenericEntity<List<Schedule>> entity = buildEntity(allSchedules);
+    try {
+        Thread.sleep(102);
+    } catch (InterruptedException e) {
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
+    return Response.ok(entity).build();
+}
 ```
 
 ### @CircuitBreaker
