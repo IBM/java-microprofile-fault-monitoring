@@ -95,28 +95,23 @@ public Response allSchedules() {
 ### @CircuitBreaker
 The `@CircuitBreaker` annotation allows you to prevent repeating timeout so that the failing services fail fast. The below code snippet means that the circuit is open once 2 (4 * 0.5) failures which occur during the rolling window of 4 consecutive invocations. The circuit will stay open for 1000ms. The circuit will then be closed after 5 consecutive successful invocations of the method. When a circuit is open a `CircuitBreakerOpenException` will be thrown.
 
-```
-	@PUT
-    @Path("/search")
-    @Counted(monotonic = true,tags="app=speaker")
-    @CircuitBreaker(requestVolumeThreshold=4, failureRatio=0.50, delay=1000, successThreshold=5)
-    public Set<Speaker> searchFailure(final Speaker speaker) {
-        if (isServiceBroken.get()) {
-            throw new RuntimeException("Breaking Service failed!");
-        }
-        final Set<Speaker> speakers = this.speakerDAO.find(speaker);
-        return speakers;
-    }
-
+```java
+@PUT
+@Path("/search")
+@Counted(monotonic = true,tags="app=speaker")
+@CircuitBreaker(requestVolumeThreshold=4, failureRatio=0.50, delay=1000, successThreshold=5)
+public Set<Speaker> searchFailure(final Speaker speaker) {
+if (isServiceBroken.get()) {
+    throw new RuntimeException("Breaking Service failed!");
+}
+final Set<Speaker> speakers = this.speakerDAO.find(speaker);
+return speakers;
+}
 ```
 
 You can combine the circuit breaker with other patterns, like the retry or the timeout. This way you can control the failures that lead to an open circuit.
 
-```
-import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
-import org.eclipse.microprofile.faulttolerance.Retry;
-import org.eclipse.microprofile.faulttolerance.Timeout;
-
+```java
 @CircuitBreaker(requestVolumeThreshold = 4, failureRatio = 0.75, delay = 1000, successThreshold = 10, )
 @Retry(retryOn = {RuntimeException.class, TimeoutException.class}, maxRetries = 7)
 @Timeout(500)
@@ -127,40 +122,40 @@ public String callSomeService() {...}
 ### @Bulkhead
 If you use @Bulkhead, metrics are added for how many concurrent calls to your method are currently executing, how often calls are rejected, how long calls take to return, and how long they spend queued (if you’re also using @Asynchronous). You can use @Bulkhead in conjunction with @Asynchronous. @Asynchronous causes an invocation to be executed by a different thread. The below example shows the usage of @bulkhead annotation, indicating that only 3 concurrent requests to the API is allowed.
 
-```
-    @GET
-    @Timed
-    @Metric
-    @Path("/getAllSpeakers")
-    @Counted(name="io.microprofile.showcase.speaker.rest.monotonic.getAllSpeakers.absolute",monotonic = true,tags="app=speaker")
-    @Bulkhead(3)
-    public Collection<Speaker> getAllSpeakers() {
-        final Collection<Speaker> speakers = this.speakerDAO.getAllSpeakers();
-        speakers.forEach(this::addHyperMedia);
-        return speakers;
-    }
+```java
+@GET
+@Timed
+@Metric
+@Path("/getAllSpeakers")
+@Counted(name="io.microprofile.showcase.speaker.rest.monotonic.getAllSpeakers.absolute",monotonic = true,tags="app=speaker")
+@Bulkhead(3)
+public Collection<Speaker> getAllSpeakers() {
+final Collection<Speaker> speakers = this.speakerDAO.getAllSpeakers();
+speakers.forEach(this::addHyperMedia);
+return speakers;
+}
 ```
 
 ### @Fallback
 Fallback annotation allows you to deal with exceptions. The previous annotations increases the success rate of invocation but you cannot eliminate exceptions. When an exception occurs it's wise to fall back to a different operation. A method can be annotated with @Fallback, which means the method will have Fallback policy applied. The fallback method needs to have same signature as the original method signature. @Fallback can be used in conjunction with any other annotation. The below code snippet means that when the method failed and reaches it's maximum retries, the method `fallBackMethodForFailingService` will be invoked. 
 
-```
-    @GET
-    @Path("/failingService")
-    @Counted(monotonic = true,tags="app=speaker")
-    @Retry(maxRetries = 2)
-    @Fallback(fallbackMethod = "fallBackMethodForFailingService")
-    public Speaker retrieveFailingService() {
-        throw new RuntimeException("Retrieve service failed!");
-    }
+```java
+@GET
+@Path("/failingService")
+@Counted(monotonic = true,tags="app=speaker")
+@Retry(maxRetries = 2)
+@Fallback(fallbackMethod = "fallBackMethodForFailingService")
+public Speaker retrieveFailingService() {
+throw new RuntimeException("Retrieve service failed!");
+}
 
-    /**
-     * Method to fallback on when you receive run time errors
-     * @return
-     */
-    private Speaker fallBackMethodForFailingService() {
-        return new Speaker();
-    }
+/**
+* Method to fallback on when you receive run time errors
+* @return
+*/
+private Speaker fallBackMethodForFailingService() {
+return new Speaker();
+}
 ```
 
 
