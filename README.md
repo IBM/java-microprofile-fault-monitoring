@@ -280,8 +280,8 @@ Following are the steps to see metrics on grafana dashboard.
 
 When @Timeout annotation is used, it results in timeout if it takes longer than the time specified which in this case is 3 seconds.
 
-```
-@POST
+```java
+    @POST
     @Counted(monotonic = true,tags="app=schedule")
     @Timeout(3000)
     public Response add(final Schedule schedule) {
@@ -302,8 +302,8 @@ If @Timeout was not used it would take long and eventually give you an output or
 
 When @Bulkhead is used, the number specified is the most thread allowed to access the API. For example if its used with value 3 it results in BulkException. [Apache Jmeter](https://jmeter.apache.org/) is used to call multiple threads on the API.
 
-```
-@GET
+```java
+    @GET
     @Timed
     @Metric
     @Counted(name="io.microprofile.showcase.speaker.rest.monotonic.retrieveAll.absolute",monotonic = true,tags="app=speaker")
@@ -328,8 +328,8 @@ For multiple thread calls to the API within the limit specified in Bulkhead, it 
 
 When @Fallback is used, even though the method throws runtime exception, the exception is logged and it falls back to another method that returns a proper response back to the user which in this case is a empty `Speaker` object.
 
-```
-@GET
+```java
+    @GET
     @Path("/failingService")
     @Counted(monotonic = true,tags="app=speaker")
     @Fallback(fallbackMethod = "fallBackMethodForFailingService")
